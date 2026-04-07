@@ -1,0 +1,12 @@
+{
+  "name": "N0435_powershell_hidden_download",
+  "search": "index=your_index sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational Image=\"*\\\\powershell.exe\" CommandLine=\"*-w hidden*\"",
+  "description": "Detects PowerShell hidden window and suspicious download behavior",
+  "cron_schedule": "*/15 * * * *",
+  "disabled": false,
+  "alert_type": "always",
+  "alert_comparator": "greater than",
+  "alert_threshold": "0",
+  "actions": "",
+  "is_scheduled": true
+}
