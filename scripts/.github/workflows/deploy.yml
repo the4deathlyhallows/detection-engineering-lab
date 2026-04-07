@@ -1,0 +1,60 @@
+name: Deploy Detections
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "detections/**"
+      - "scripts/**"
+      - ".github/workflows/deploy.yml"
+
+jobs:
+  deploy-splunk:
+    runs-on: ubuntu-latest
+    if: contains(join(github.event.commits.*.modified, ' '), 'detections/splunk/') || contains(join(github.event.commits.*.added, ' '), 'detections/splunk/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Deploy to Splunk
+        env:
+          SPLUNK_URL: ${{ secrets.SPLUNK_URL }}
+          SPLUNK_USERNAME: ${{ secrets.SPLUNK_USERNAME }}
+          SPLUNK_PASSWORD: ${{ secrets.SPLUNK_PASSWORD }}
+          SPLUNK_APP: ${{ secrets.SPLUNK_APP }}
+        run: python scripts/deploy_splunk.py
+
+  deploy-chronicle:
+    runs-on: ubuntu-latest
+    if: contains(join(github.event.commits.*.modified, ' '), 'detections/yara/') || contains(join(github.event.commits.*.added, ' '), 'detections/yara/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install requests google-auth
+
+      - name: Write Chronicle service account file
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+        run: |
+          echo "$GOOGLE_SA_JSON" > "${RUNNER_TEMP}/chronicle-sa.json"
+
+      - name: Deploy to Chronicle
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/chronicle-sa.json
+          CHRONICLE_BASE_URL: ${{ secrets.CHRONICLE_BASE_URL }}
+        run: python scripts/deploy_chronicle.py
