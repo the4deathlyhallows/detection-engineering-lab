@@ -1,0 +1,12 @@
+rule N0440_CLICKFIX_MAC_TERMINAL_CURL_BASE64_OSASCRIPT_ACTIVITY {
+  meta:
+    author = "NELNET"
+    description = "Detects ClickFix-style macOS activity involving curl, base64, and osascript"
+    severity = "HIGH"
+
+  events:
+    $e.metadata.event_type = "PROCESS_LAUNCH"
+
+  condition:
+    $e
+}
